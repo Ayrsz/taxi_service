@@ -1,65 +1,167 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"sync"
-	"your-app/models"
 
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"taxi_service/models"
 )
 
-var (
-	instance *gorm.DB
-	once     sync.Once
-)
-
-// GetDB returns the singleton database instance
-func GetDB() *gorm.DB {
-	once.Do(func() {
-		var db *gorm.DB
-		var err error
-
-		if os.Getenv("DB_DRIVER") == "sqlite" {
-			// Use SQLite for testing
-			db, err = gorm.Open(sqlite.Open(os.Getenv("DB_NAME")), &gorm.Config{
-				Logger: logger.Default.LogMode(logger.Info),
-			})
-		} else {
-			// Use PostgreSQL for production
-			dsn := fmt.Sprintf(
-				"host=%s user=%s password=%s dbname=%s port=%s",
-				os.Getenv("DB_HOST"),
-				os.Getenv("DB_USER"),
-				os.Getenv("DB_PASSWORD"),
-				os.Getenv("DB_NAME"),
-				os.Getenv("DB_PORT"),
-			)
-
-			db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-				Logger: logger.Default.LogMode(logger.Info),
-			})
-		}
-
-		if err != nil {
-			log.Fatal("Failed to connect to database. \n", err)
-		}
-
-		log.Println("connected")
-		db.Logger = logger.Default.LogMode(logger.Info)
-		log.Println("running migrations")
-
-		db.AutoMigrate(&models.DummyUser{})
-		instance = db
-	})
-	return instance
+// Implementação do repositório JSON para dummy users
+type JSONDummyUserRepository struct {
+	filePath string
+	mutex    sync.RWMutex
 }
 
-// ConnectDb initializes the database connection
-func ConnectDb() {
-	GetDB()
+func NewJSONDummyUserRepository() *JSONDummyUserRepository {
+	return &JSONDummyUserRepository{
+		filePath: "./data/dummy_users.json",
+	}
+}
+
+func (r *JSONDummyUserRepository) criarArquivoSeNaoExistir() error {
+	if _, err := os.Stat(r.filePath); os.IsNotExist(err) {
+		// Criar diretório se não existir
+		if err := os.MkdirAll("./data", 0755); err != nil {
+			return err
+		}
+
+		// Criar arquivo vazio
+		file, err := os.Create(r.filePath)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		// Escrever array vazio
+		_, err = file.WriteString("[]")
+		return err
+	}
+	return nil
+}
+
+func (r *JSONDummyUserRepository) lerTodos() ([]models.DummyUser, error) {
+	if err := r.criarArquivoSeNaoExistir(); err != nil {
+		return nil, err
+	}
+
+	data, err := os.ReadFile(r.filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []models.DummyUser
+	if err := json.Unmarshal(data, &users); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (r *JSONDummyUserRepository) salvarTodos(users []models.DummyUser) error {
+	data, err := json.MarshalIndent(users, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(r.filePath, data, 0644)
+}
+
+func (r *JSONDummyUserRepository) BuscarPorEmail(email string) (*models.DummyUser, error) {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+
+	users, err := r.lerTodos()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, user := range users {
+		if user.Email == email {
+			return &user, nil
+		}
+	}
+
+	return nil, fmt.Errorf("user não encontrado")
+}
+
+func (r *JSONDummyUserRepository) BuscarPorID(id int) (*models.DummyUser, error) {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+
+	users, err := r.lerTodos()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, user := range users {
+		if user.ID == id {
+			return &user, nil
+		}
+	}
+
+	return nil, fmt.Errorf("user não encontrado")
+}
+
+func (r *JSONDummyUserRepository) Criar(user *models.DummyUser) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	users, err := r.lerTodos()
+	if err != nil {
+		return err
+	}
+
+	// Gerar novo ID
+	maxID := 0
+	for _, u := range users {
+		if u.ID > maxID {
+			maxID = u.ID
+		}
+	}
+	user.ID = maxID + 1
+
+	users = append(users, *user)
+	return r.salvarTodos(users)
+}
+
+func (r *JSONDummyUserRepository) Atualizar(id int, user *models.DummyUser) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	users, err := r.lerTodos()
+	if err != nil {
+		return err
+	}
+
+	for i, u := range users {
+		if u.ID == id {
+			user.ID = id
+			users[i] = *user
+			return r.salvarTodos(users)
+		}
+	}
+
+	return fmt.Errorf("user não encontrado")
+}
+
+func (r *JSONDummyUserRepository) Excluir(id int) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	users, err := r.lerTodos()
+	if err != nil {
+		return err
+	}
+
+	for i, u := range users {
+		if u.ID == id {
+			users = append(users[:i], users[i+1:]...)
+			return r.salvarTodos(users)
+		}
+	}
+
+	return fmt.Errorf("user não encontrado")
 }

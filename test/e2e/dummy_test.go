@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"testing"
 
-	"your-app/models"
-	"your-app/test"
+	"taxi_service/models"
+	"taxi_service/test"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +20,7 @@ func TestDummyCRUD(t *testing.T) {
 		Email: "test@test.com",
 	}
 
-	resp := test.MakeRequest(t, app, "POST", "/dummy", createPayload)
+	resp := test.MakeRequest(t, app, "POST", "/dummy-users", createPayload)
 	assert.Equal(t, 200, resp.StatusCode)
 
 	var createdUser models.DummyUser
@@ -29,7 +29,7 @@ func TestDummyCRUD(t *testing.T) {
 	assert.Equal(t, createPayload.Email, createdUser.Email)
 
 	// Test Get
-	resp = test.MakeRequest(t, app, "GET", "/dummy/"+strconv.FormatUint(uint64(createdUser.ID), 10), nil)
+	resp = test.MakeRequest(t, app, "GET", "/dummy-users/"+strconv.FormatUint(uint64(createdUser.ID), 10), nil)
 	assert.Equal(t, 200, resp.StatusCode)
 
 	var fetchedUser models.DummyUser
@@ -43,7 +43,7 @@ func TestDummyCRUD(t *testing.T) {
 		Email: "Email@email.com",
 	}
 
-	resp = test.MakeRequest(t, app, "PUT", "/dummy/"+strconv.FormatUint(uint64(createdUser.ID), 10), updatePayload)
+	resp = test.MakeRequest(t, app, "PUT", "/dummy-users/"+strconv.FormatUint(uint64(createdUser.ID), 10), updatePayload)
 	assert.Equal(t, 200, resp.StatusCode)
 
 	var updatedUser models.DummyUser
@@ -52,7 +52,7 @@ func TestDummyCRUD(t *testing.T) {
 	assert.Equal(t, updatePayload.Email, updatedUser.Email)
 
 	// Test List
-	resp = test.MakeRequest(t, app, "GET", "/dummy", nil)
+	resp = test.MakeRequest(t, app, "GET", "/dummy-users", nil)
 	assert.Equal(t, 200, resp.StatusCode)
 
 	var users []models.DummyUser
@@ -60,10 +60,10 @@ func TestDummyCRUD(t *testing.T) {
 	assert.GreaterOrEqual(t, len(users), 1)
 
 	// Test Delete
-	resp = test.MakeRequest(t, app, "DELETE", "/dummy/"+strconv.FormatUint(uint64(createdUser.ID), 10), nil)
+	resp = test.MakeRequest(t, app, "DELETE", "/dummy-users/"+strconv.FormatUint(uint64(createdUser.ID), 10), nil)
 	assert.Equal(t, 200, resp.StatusCode)
 
 	// Verify deletion
-	resp = test.MakeRequest(t, app, "GET", "/dummy/"+strconv.FormatUint(uint64(createdUser.ID), 10), nil)
+	resp = test.MakeRequest(t, app, "GET", "/dummy-users/"+strconv.FormatUint(uint64(createdUser.ID), 10), nil)
 	assert.Equal(t, 500, resp.StatusCode) // The service returns 500 when record not found
 }

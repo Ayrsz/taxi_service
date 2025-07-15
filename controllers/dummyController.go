@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"strconv"
-	"your-app/models"
-	"your-app/services"
+	"taxi_service/models"
+	"taxi_service/services"
 
 	"github.com/gofiber/fiber/v2"
 )
