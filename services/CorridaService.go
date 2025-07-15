@@ -1,76 +1,37 @@
 package services
 
 import (
+	"errors"
 	"your-app/database"
 	"your-app/models"
-	"gorm.io/gorm"
 )
 
-func ListCorridas() ([]models.Corrida, error) {
-	var corridas []models.Corrida
-	err := database.GetDB().Find(&corridas).Error
+// CancelarCorrida contém a regra de negócio para cancelar uma corrida.
+func CancelarCorrida(id int) (*models.Corrida, error) {
+	corrida, err := database.GetCorridaByID(id) // Busca a corrida no banco de dados.
 	if err != nil {
-		return []models.Corrida{}, err
+		return nil, err //Corrida não encontrada
 	}
 
-	return corridas, nil
+	//Só pode cancelar se estiver "em andamento" ou "cancelada".
+	if corrida.Status != models.StatusAndamento && corrida.Status != models.StatusPendente{
+		return nil, errors.New("operação inválida: só é possível cancelar corridas que estão em andamento ou Pendentes")
+	}
+
+	//Altera o status da corrida para "cancelada".
+	corrida.Status = models.StatusCancelada
+
+	//Atualiza a corrida no banco de dados.
+	err = database.UpdateCorrida(*corrida)
+	if err != nil {
+		return nil, err // Caso ocorra um erro ao salvar.
+	}
+
+	//Retorna a corrida com o status atualizado.
+	return corrida, nil
 }
 
-func GetCorrida(id int) (models.Corrida, error) {
-	var user models.DummyUser
-	err := database.GetDB().First(&user, id).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return models.DummyUser{}, err
-		}
-		return models.DummyUser{}, err
-	}
-	return user, nil
-}
-
-func CreateCorrida(user *models.DummyUser) error {
-	err := database.GetDB().Create(user).Error
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func UpdateCorrida(id int, updateData *models.DummyUser) (models.DummyUser, error) {
-	user, err := GetDummyUser(id)
-	if err != nil {
-		return models.DummyUser{}, err
-	}
-
-	// Update the user fields with the new data
-	if updateData.Name != "" {
-		user.Name = updateData.Name
-	}
-	if updateData.Email != "" {
-		user.Email = updateData.Email
-	}
-	// Add other fields as needed
-
-	err = database.GetDB().Model(&models.DummyUser{}).Where("id = ?", user.ID).Updates(user).Error
-	if err != nil {
-		return models.DummyUser{}, err
-	}
-
-	// Fetch the updated user to return
-	updatedUser, err := GetDummyUser(id)
-	if err != nil {
-		return models.DummyUser{}, err
-	}
-
-	return updatedUser, nil
-}
-
-func DeleteCorrida(id int) error {
-	err := database.GetDB().Delete(&models.DummyUser{}, id).Error
-	if err != nil {
-		return err
-	}
-	return nil
+// GetCorrida busca uma corrida pelo ID (função auxiliar para teste).
+func GetCorrida(id int) (*models.Corrida, error) {
+    return database.GetCorridaByID(id)
 }
