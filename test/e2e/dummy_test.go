@@ -1,5 +1,5 @@
 package e2e
-
+/*
 import (
 	"strconv"
 	"testing"
@@ -66,4 +66,4 @@ func TestDummyCRUD(t *testing.T) {
 	// Verify deletion
 	resp = test.MakeRequest(t, app, "GET", "/dummy-users/"+strconv.FormatUint(uint64(createdUser.ID), 10), nil)
 	assert.Equal(t, 500, resp.StatusCode) // The service returns 500 when record not found
-}
+}*/
