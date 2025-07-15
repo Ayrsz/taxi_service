@@ -2,11 +2,9 @@ package models
 
 import (
 	"time"
-	"gorm.io/gorm"
 )
 
 type Corrida struct {
-	gorm.Model
 	Id int `json:"id"`
 	Data  string `json:"data"` //dia da corrida
 	Horario time.Time `json:"horario"` // horário de inicio 
@@ -21,4 +19,5 @@ const (
 	StatusAndamento = "andamento"
 	StatusCancelada = "cancelada"
 	StatusFinalizada = "finalizada"
+	StatusPendente = "pendente" //Ainda não aceita
 )
