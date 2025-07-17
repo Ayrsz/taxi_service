@@ -12,7 +12,8 @@ func SetupCorridaRoutes(api fiber.Router) {
 
 	corridaRoutes := api.Group("/corridas")
 
+	corridaRoutes.Post("/monitorar", corridaController.MonitorarCorrida)
+	corridaRoutes.Post("/finalizar", corridaController.FinalizarCorrida)
 	corridaRoutes.Patch("/:id/cancelar", corridaController.CancelarCorrida)
-
 	corridaRoutes.Post("/verificar-tempo", corridaController.VerificarTempo)
 }
