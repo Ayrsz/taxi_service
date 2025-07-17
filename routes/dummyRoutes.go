@@ -1,17 +1,17 @@
 package routes
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"taxi_service/controllers"
 
-	"your-app/controllers"
+	"github.com/gofiber/fiber/v2"
 )
 
-func DummyRoutes(api fiber.Router) {
-	dummy := api.Group("/dummy")
-
-	dummy.Get("/", controllers.ListDummyInfo)
-	dummy.Get("/:id", controllers.GetDummyInfo)
-	dummy.Post("/", controllers.CreateDummyInfo)
-	dummy.Put("/:id", controllers.UpdateDummyInfo)
-	dummy.Delete("/:id", controllers.DeleteDummyInfo)
+func SetupDummyRoutes(api fiber.Router) {
+	// Rotas de dummy users
+	dummyUsers := api.Group("/dummy-users")
+	dummyUsers.Get("/", controllers.ListDummyInfo)
+	dummyUsers.Get("/:id", controllers.GetDummyInfo)
+	dummyUsers.Post("/", controllers.CreateDummyInfo)
+	dummyUsers.Put("/:id", controllers.UpdateDummyInfo)
+	dummyUsers.Delete("/:id", controllers.DeleteDummyInfo)
 }

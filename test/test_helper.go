@@ -7,19 +7,17 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"your-app/config"
-	"your-app/database"
-	"your-app/routes"
+	// "taxi_service/config"
+	// "taxi_service/database"
+	"taxi_service/routes"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 // SetupTestApp creates a new Fiber app for testing
 func SetupTestApp(t *testing.T) *fiber.App {
-	config.SetupTestEnv(t)
-
+	// Não precisamos mais de configuração de banco para JSON
 	app := fiber.New()
-	database.ConnectDb()
 	routes.SetupRoutes(app)
 
 	return app
@@ -27,7 +25,7 @@ func SetupTestApp(t *testing.T) *fiber.App {
 
 // CleanupTestApp cleans up after tests
 func CleanupTestApp(t *testing.T) {
-	config.CleanupTestEnv(t)
+	// Não precisa mais de cleanup de banco
 }
 
 // MakeRequest makes an HTTP request to the test app
