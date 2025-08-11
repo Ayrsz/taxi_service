@@ -16,3 +16,9 @@ type Corrida struct {
 	Status string  `json:"status"`// andamento, finalizada ou cancelada
 	CPFMotorista *int `json:"cpfMotorista"` // chave estrangeira pro motorista responsavel
 }
+
+const (
+	StatusAndamento = "andamento"
+	StatusCancelada = "cancelada"
+	StatusFinalizada = "finalizada"
+)
