@@ -1,34 +1,18 @@
 package models
 
-import "time"
-
-// CorridaStatus representa o status de uma corrida
-const (
-	StatusProcurandoMotorista      = "procurando_motorista"
-	StatusMotoristaEncontrado      = "motorista_encontrado"
-	StatusCorridaIniciada          = "corrida_iniciada"
-	StatusEmAndamento              = "em_andamento" // Mantido para compatibilidade
-	StatusAtrasado                 = "atrasado"
-	StatusConcluidaAntecedencia    = "concluída com antecedência"
-	StatusConcluidaNoTempo         = "concluída no tempo previsto"
-	StatusCanceladaPorExcessoTempo = "cancelada por excesso de tempo"
-	StatusCanceladaPeloUsuario     = "cancelada pelo usuário"
+import (
+	"time"
+	"gorm.io/gorm"
 )
 
 type Corrida struct {
-	ID             int
-	MotoristaID    int
-	PassageiroID   int
-	Origem         string
-	Destino        string
-	TempoEstimado  int // minutos
-	TempoDecorrido int // minutos
-	Preco          float64 // valor da corrida
-	Status         string
-	BonusAplicado  bool
-	DataInicio     time.Time
-	DataFim        *time.Time
-	Avaliacao	   *int
-	MotoristaLat   float64
-	MotoristaLng   float64
+	gorm.Model
+	Id int `json:"id"`
+	Data  string `json:"data"` //dia da corrida
+	Horario time.Time `json:"horario"` // horário de inicio 
+	Tempo int `json:"tempo"` // tempo para chegar ao destino
+	Valor int `json:"valor"` // valor da corrida
+	Avaliacao *int `json:"avaliacao"` // avaliacao 1, 2, 3, 4, 5 ou nil, * permite nil
+	Status string  `json:"status"`// andamento, finalizada ou cancelada
+	CPFMotorista *int `json:"cpfMotorista"` // chave estrangeira pro motorista responsavel
 }
