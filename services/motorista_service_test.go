@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"taxi_service/models"
+	"taxi-service/models"
 )
 
 // MockMotoristaRepository is a mock implementation of repositories.MotoristaRepository

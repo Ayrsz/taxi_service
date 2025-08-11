@@ -6,7 +6,7 @@ import (
 	"os"
 	"sync"
 
-	"taxi_service/models"
+	"taxi-service/models"
 )
 
 // Implementação do repositório JSON para dummy users

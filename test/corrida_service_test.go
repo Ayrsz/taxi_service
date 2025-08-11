@@ -1,8 +1,8 @@
 package test
 
 import (
-	"taxi_service/models"
-	"taxi_service/services"
+	"taxi-service/models"
+	"taxi-service/services"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"taxi_service/models"
-	"taxi_service/repositories"
+	"taxi-service/models"
+	"taxi-service/repositories"
 )
 
 // CadastroMotoristaRequest representa os dados de entrada para cadastro

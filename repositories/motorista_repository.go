@@ -7,7 +7,7 @@ import (
 	"os"
 	"sync"
 
-	"taxi_service/models"
+	"taxi-service/models"
 )
 
 // MotoristaRepository define a interface para operações com motoristas

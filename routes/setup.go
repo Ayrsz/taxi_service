@@ -1,18 +1,18 @@
 package routes
 
 import (
-	"taxi_service/services"
+	"taxi-service/services"
 
 	"github.com/gofiber/fiber/v2"
-	// "github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-// SetupRoutes inicializa todas as rotas da aplicação.
+// SetupAppRoutes inicializa todas as rotas da aplicação.
 func SetupRoutes(app *fiber.App) {
 	// Middlewares
-	// app.Use(cors.New())
-	// app.Use(logger.New())
+	app.Use(cors.New())
+	app.Use(logger.New())
 
 	// Crie uma instância do serviço de corrida
 	corridaService := services.NewCorridaService()
@@ -25,7 +25,9 @@ func SetupRoutes(app *fiber.App) {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "OK"})
 	})
 
-	// Configura as rotas de corrida, passando o serviço
+	// Configura todas as rotas
+	SetupDummyRoutes(api)
+	SetupMotoristaRoutes(api)
 	SetupCorridaRoutes(api, corridaService)
-
+	NotificacaoCorridaRoutes(api)
 }

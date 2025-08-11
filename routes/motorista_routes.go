@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"taxi_service/controllers"
-	"taxi_service/repositories"
-	"taxi_service/services"
+	"taxi-service/controllers"
+	"taxi-service/repositories"
+	"taxi-service/services"
 
 	"github.com/gofiber/fiber/v2"
 )

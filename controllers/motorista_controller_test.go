@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"taxi_service/models"
-	"taxi_service/services"
+	"taxi-service/models"
+	"taxi-service/services"
 )
 
 // MockMotoristaService mock do serviço de motorista
