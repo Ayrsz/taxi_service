@@ -60,7 +60,7 @@ func (s *CorridaService) GetCorridaPorID(id int) (*models.Corrida, error) {
 
 	corrida, exists := s.corridas[id]
 	if !exists {
-		return nil, fmt.Errorf("corrida com ID %d não encontrada", id)
+		return nil, fmt.Errorf("corrida com ID %d não encontrada, na procura", id)
 	}
 	return corrida, nil
 }
@@ -108,7 +108,7 @@ func (s *CorridaService) CancelarCorrida(corridaID int) error {
 
 	corrida, exists := s.corridas[corridaID]
 	if !exists {
-		return fmt.Errorf("corrida com ID %d não encontrada", corridaID)
+		return fmt.Errorf("corrida com ID %d não encontrada para cancelar", corridaID)
 	}
 
 	corrida.Status = models.StatusCanceladaPeloUsuario
@@ -234,7 +234,7 @@ func (s *CorridaService) CancelarCorridaPeloMotorista(corridaID int, motoristaID
 	}
 
 	if corrida.MotoristaID != motoristaID {
-		return fmt.Errorf("motorista %d não tem permissão para cancelar a corrida %d", motoristaID, corridaID)
+		return fmt.Errorf("motorista %d não pode cancelar a corrida %d, status %s", motoristaID, corridaID, corrida.Status)
 	}
 
 	switch corrida.Status {

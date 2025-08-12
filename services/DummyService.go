@@ -7,7 +7,7 @@ import (
     "taxi-service/models"
 )
 
-const dummyUserFile = "./data/dummy_users.json"
+const dummyUserFile = "./data/users.json"
 
 func readUsers() ([]models.DummyUser, error) {
     // Criar diretório se não existir

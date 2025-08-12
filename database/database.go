@@ -17,7 +17,7 @@ type JSONDummyUserRepository struct {
 
 func NewJSONDummyUserRepository() *JSONDummyUserRepository {
 	return &JSONDummyUserRepository{
-		filePath: "./data/dummy_users.json",
+		filePath: "./data/users.json",
 	}
 }
 

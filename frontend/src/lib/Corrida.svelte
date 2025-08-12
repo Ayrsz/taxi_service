@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { navigate } from 'svelte-routing';
   import axios from 'axios';
-  import Modal from './CancelCorrida.svelte'; // 1. Importe o novo componente
+  import Modal from './ConfirmacaoFimCorrida.svelte';
 
   export let id;
 
@@ -11,16 +11,15 @@
   let ride = null;
   let rideStatus = 'Carregando informações...';
   let motoristaMarker;
-  let showCancelModal = false; // 2. Crie uma variável para controlar a visibilidade do modal
+
+  // Variáveis para controlar CADA modal individualmente
+  let showCancelModal = false;
+  let showFinishModal = false;
 
   const api = axios.create({
     baseURL: 'http://localhost:3000/api',
   });
-
-
-  console.log("O valor do ID recebido é:", id); // Adicione esta linha para depurar
   
-
   onMount(() => {
     map = L.map(mapElement).setView([-23.55052, -46.633308], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -57,40 +56,31 @@
     }
   }
 
-  // 3. Esta função agora APENAS faz a chamada para a API
   async function executeCancel() {
-  showCancelModal = false; // Esconde o modal
-  try {
-    // ID do motorista que está a cancelar (para este exemplo, usamos um valor fixo)
-    const motoristaIdParaCancelar = "1"; // Corresponde ao motorista_joao dos seus testes
-
-    // 1. Endpoint corrigido para /cancelar/motorista
-    // 2. Adicionado o corpo (payload) com o motorista_id
-    await api.post(`/corrida/${id}/cancelar/motorista`, {
-      motorista_id: motoristaIdParaCancelar 
-    });
-
-    alert('Sua corrida foi cancelada.');
-    navigate('/');
-  } catch (error) {
-    console.error('Erro ao cancelar a corrida:', error);
-    // Extrai a mensagem de erro do backend, se disponível
-    const errorMessage = error.response?.data?.error || 'Não foi possível cancelar a corrida.';
-    alert(errorMessage);
+    showCancelModal = false;
+    try {
+      const motoristaIdParaCancelar = "1";
+      await api.post(`/corrida/${id}/cancelar/motorista`, {
+        motorista_id: motoristaIdParaCancelar 
+      });
+      alert('Sua corrida foi cancelada.');
+      navigate('/');
+    } catch (error) {
+      console.error('Erro ao cancelar a corrida:', error);
+      const errorMessage = error.response?.data?.error || 'Não foi possível cancelar a corrida.';
+      alert(errorMessage);
+    }
   }
-}
   
-  // Função para finalizar a corrida (não foi alterada)
-  async function finishRide() {
-    if (confirm('Confirmar a finalização da corrida?')) {
-      try {
-        await api.post(`/corrida/${id}/finalizar`);
-        alert('Corrida finalizada com sucesso!');
-        navigate('/');
-      } catch (error) {
-        console.error('Erro ao finalizar a corrida:', error);
-        alert('Não foi possível finalizar a corrida.');
-      }
+  async function executeFinishRide() {
+    showFinishModal = false; // Esconde o modal de finalização
+    try {
+      await api.post(`/corrida/${id}/finalizar`);
+      alert('Corrida finalizada com sucesso!');
+      navigate('/');
+    } catch (error) {
+      console.error('Erro ao finalizar a corrida:', error);
+      alert('Não foi possível finalizar a corrida.');
     }
   }
 
@@ -143,9 +133,18 @@
 {#if showCancelModal}
   <Modal 
     title="Cancelar Corrida"
-    message="Esta ação não pode ser desfeita. Você tem certeza que deseja cancelar sua corrida? Cancelamentos frequentes podem resultar em penalidades."
+    message="Esta ação não pode ser desfeita. Você tem certeza que deseja cancelar sua corrida?"
     on:confirm={executeCancel}
     on:close={() => showCancelModal = false}
+  />
+{/if}
+
+{#if showFinishModal}
+  <Modal 
+    title="Finalizar Corrida"
+    message="Você confirma que chegou ao seu destino e deseja finalizar a corrida?"
+    on:confirm={executeFinishRide}
+    on:close={() => showFinishModal = false}
   />
 {/if}
 
@@ -158,6 +157,6 @@
 
   <div class="actions">
     <button class="cancel-btn" on:click={() => showCancelModal = true}>Cancelar Corrida</button>
-    <button class="finish-btn" on:click={finishRide}>Finalizar Corrida</button>
+    <button class="finish-btn" on:click={() => showFinishModal = true}>Finalizar Corrida</button>
   </div>
 </div>

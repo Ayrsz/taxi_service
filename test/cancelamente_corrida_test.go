@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -14,7 +13,6 @@ import (
 	"taxi-service/services"
 
 	"github.com/cucumber/godog"
-	"github.com/cucumber/godog/colors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )

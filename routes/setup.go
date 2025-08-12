@@ -18,7 +18,7 @@ func SetupRoutes(app *fiber.App) {
 	corridaService := services.NewCorridaService()
 
 	// Grupo de rotas da API
-	api := app.Group("/", logger.New())
+	api := app.Group("/api", logger.New())
 
 	// Rota de Health Check
 	api.Get("/health", func(c *fiber.Ctx) error {
