@@ -1,15 +1,15 @@
 package services
 
 import (
-	"your-app/database"
-	"your-app/models"
+	"github.com/gjcms/taxi_service/database"
+	"github.com/gjcms/taxi_service/models"
 
 	"gorm.io/gorm"
 )
 
 func ListDummyUser() ([]models.DummyUser, error) {
 	var users []models.DummyUser
-	err := database.GetDB().Find(&users).Error
+	err := database.DB.Find(&users).Error
 	if err != nil {
 		return []models.DummyUser{}, err
 	}
@@ -19,7 +19,7 @@ func ListDummyUser() ([]models.DummyUser, error) {
 
 func GetDummyUser(id int) (models.DummyUser, error) {
 	var user models.DummyUser
-	err := database.GetDB().First(&user, id).Error
+	err := database.DB.First(&user, id).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return models.DummyUser{}, err
@@ -30,7 +30,7 @@ func GetDummyUser(id int) (models.DummyUser, error) {
 }
 
 func CreateDummyUser(user *models.DummyUser) error {
-	err := database.GetDB().Create(user).Error
+	err := database.DB.Create(user).Error
 
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func UpdateDummyUser(id int, updateData *models.DummyUser) (models.DummyUser, er
 	}
 	// Add other fields as needed
 
-	err = database.GetDB().Model(&models.DummyUser{}).Where("id = ?", user.ID).Updates(user).Error
+	err = database.DB.Model(&models.DummyUser{}).Where("id = ?", user.ID).Updates(user).Error
 	if err != nil {
 		return models.DummyUser{}, err
 	}
@@ -69,7 +69,7 @@ func UpdateDummyUser(id int, updateData *models.DummyUser) (models.DummyUser, er
 }
 
 func DeleteDummyUser(id int) error {
-	err := database.GetDB().Delete(&models.DummyUser{}, id).Error
+	err := database.DB.Delete(&models.DummyUser{}, id).Error
 	if err != nil {
 		return err
 	}

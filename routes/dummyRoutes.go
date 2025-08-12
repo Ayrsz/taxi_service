@@ -1,9 +1,8 @@
 package routes
 
 import (
+	"github.com/gjcms/taxi_service/controllers"
 	"github.com/gofiber/fiber/v2"
-
-	"your-app/controllers"
 )
 
 func DummyRoutes(api fiber.Router) {

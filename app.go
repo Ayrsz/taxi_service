@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"your-app/routes"
+	"github.com/gjcms/taxi_service/routes"
 
-	"your-app/database"
+	"github.com/gjcms/taxi_service/database"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"

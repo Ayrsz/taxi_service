@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"your-app/config"
-	"your-app/database"
-	"your-app/routes"
+	"github.com/gjcms/taxi_service/config"
+	"github.com/gjcms/taxi_service/database"
+	"github.com/gjcms/taxi_service/routes"
 
 	"github.com/gofiber/fiber/v2"
 )

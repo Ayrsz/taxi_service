@@ -1,0 +1,13 @@
+# Arquivos do Go
+*.exe
+*.bin
+
+# Arquivos do Node.js/Svelte
+/my-taxi-frontend/node_modules
+/my-taxi-frontend/build
+/my-taxi-frontend/.svelte-kit
+/my-taxi-frontend/dist
+
+# Arquivos de IDEs e sistemas operacionais
+.idea/
+.DS_Store
