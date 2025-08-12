@@ -2,7 +2,7 @@ package services
 
 import (
 	"fmt"
-	"taxi_service/models"
+	"taxi-service/models"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

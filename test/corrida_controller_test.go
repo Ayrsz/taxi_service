@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http/httptest"
-	"taxi_service/controllers"
-	"taxi_service/models"
+	"taxi-service/controllers"
+	"taxi-service/models"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"

@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"taxi_service/controllers"
+	"taxi-service/controllers"
 
 	"github.com/gofiber/fiber/v2"
 )

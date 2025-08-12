@@ -5,8 +5,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"taxi_service/models"
-	"taxi_service/services"
+	"taxi-service/models"
+	"taxi-service/services"
 )
 
 // MotoristaController gerencia as rotas relacionadas a motoristas

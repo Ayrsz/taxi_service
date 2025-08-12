@@ -1,45 +1,61 @@
 Feature: Notificação de novas corridas por perto
+  Como um motorista
+  Eu quero receber notificações de novas corridas próximas
+  Para que eu possa aceitar corridas 
+
+  Background:
+    Given que o motorista de nome “João” está logado
+    And sua localização está em "Rua A, 123"
+    And está com o status "disponível"
 
   Scenario: Receber notificação de corrida próxima quando estiver disponível
-    Given o motorista de nome “João” está logado
-    And está com o status "disponível"
-    When uma nova corrida é solicitada por um passageiro próximo
-    Then deve receber uma notificação com os detalhes da corrida
-    And deve ter a opção de aceitar ou recusar a corrida
+    Given uma corrida é solicitada por "Maria Silva" 
+    When estou num raio menor que 2 km da corrida
+    Then deve receber uma notificação contendo:
+      | tempo       | 23 minutos           |
+      | distância   | 1.5 km               |
+      | valor       | R$ 12,50             |
+      | passageiro  | Maria Silva          |
+    And deve ter botões de "Aceitar" e "Recusar" 
 
   Scenario: Notificação expira após tempo limite
-    Given que o motorista de nome “João” está logado
-    And está com o status "disponível"
-    And recebe uma notificação de corrida
-    When não interage com a notificação em até “20” segundos
-    Then a notificação deve desaparecer
+    Given recebe uma notificação de corrida
+    When passa 20 segundos sem interagir com a notificação
+    Then a notificação deve desaparecer automaticamente
+    And o status deve permanecer como "disponível"
+    And outro motorista pode aceitar a corrida
 
-  Scenario: Corrida aceita deve ser cadastrada no histórico e impedir novas notificações
-    Given o motorista de nome “João” está logado
-    And está com o status "disponível"
-    And recebi uma notificação de uma nova corrida próxima
-    When aceita a corrida
+  Scenario: Corrida aceita é registrada no histórico
+    Given recebe uma notificação de corrida
+    When clica em "Aceitar"
     Then o status deve ser alterado para "ocupado"
-    And a corrida deve ser registrada no histórico como "aceita"
-    And enquanto o status de “João” estiver como "ocupado", não deve receber notificações de novas corridas
+    And a corrida deve ser registrada no histórico como "em_andamento"
 
-  Scenario: Motorista recusa a corrida
-    Given o motorista de nome “João” está logado
-    And está com o status "disponível"
-    And recebe uma notificação de uma nova corrida próxima
-    When recusa a corrida
-    Then o status deve permanecer como "disponível"
-    And não deve ser registrada nenhuma corrida no histórico
-    And deve continuar recebendo notificações de novas corridas próximas
+  Scenario: Motorista ocupado não recebe notificações
+    Given o status está "ocupado"
+    When uma corrida é solicitada por "Carlos Pereira"
+    And estou num raio menor que 2 km da corrida
+    Then não deve receber nenhuma notificação
 
-  Scenario: Motorista desativa notificações de novas corridas
-    Given o motorista de nome “João” está logado
-    When eu desativo a opção "Receber notificações de novas corridas"
-    Then o status deve estar “ocupado”
-    And não deve receber notificações de novas corridas
+  Scenario: Recusar corrida mantém disponibilidade
+    Given recebe uma notificação de corrida
+    When clica em "Recusar"
+    Then o status deve permanecer "disponível"
+    And outro motorista pode aceitar a corrida
 
- Scenario: Motorista ativa notificações de novas corridas
-    Given o motorista de nome “João” está logado
+  Scenario: Desativar notificações altera status
+    Given está recebendo notificações
+    When desativa a opção "Receber notificações de novas corridas"
+    Then o status deve ser alterado para "ocupado"
+
+  Scenario: Ativar notificações altera status
+    Given as notificações estão desativadas
+    And o status está "ocupado"
     When ativa a opção "Receber notificações de novas corridas"
-    Then o status deve estar “disponível”
-    And deve voltar a receber notificações de novas corridas
+    Then o status deve ser alterado para "disponível"
+    And deve receber notificações de novas corridas
+
+  Scenario: Motorista não recebe notificações fora do raio
+    Given uma corrida é solicitada por "Ana Costa"
+    When estou num raio maior que 2 km da corrida
+    Then não deve receber nenhuma notificação

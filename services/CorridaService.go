@@ -1,7 +1,7 @@
 package services
 
 import (
-	"taxi_service/models"
+	"taxi-service/models"
 	"time"
 
 	"errors"

@@ -2,7 +2,7 @@ package services
 
 import (
 	"testing"
-	"taxi_service/models"
+	"taxi-service/models"
 )
 
 func TestAvaliarCorrida_Sucesso(t *testing.T) {
