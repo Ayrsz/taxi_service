@@ -1,5 +1,5 @@
 package routes
-
+/*
 import (
 	"taxi-service/controllers"
 
@@ -15,3 +15,4 @@ func SetupDummyRoutes(api fiber.Router) {
 	dummyUsers.Put("/:id", controllers.UpdateDummyInfo)
 	dummyUsers.Delete("/:id", controllers.DeleteDummyInfo)
 }
+*/

@@ -162,3 +162,42 @@ func (cc *CorridaController) ListarCorridas(c *fiber.Ctx) error {
 func (cc *CorridaController) Service() *services.CorridaService {
 	return cc.service
 }
+
+type cancelamentoMotoristaRequest struct {
+	MotoristaID string `json:"motorista_id"`
+}
+
+// CancelarCorridaPeloMotorista lida com a requisição de cancelamento de uma corrida por um motorista.
+func (cc *CorridaController) CancelarCorridaPeloMotorista(c *fiber.Ctx) error {
+	corridaID, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "ID da corrida inválido",
+		})
+	}
+
+	var req cancelamentoMotoristaRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Corpo da requisição inválido",
+		})
+	}
+
+	if req.MotoristaID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "O campo 'motorista_id' é obrigatório",
+		})
+	}
+
+	// REATIVADO: A chamada ao serviço agora funcionará corretamente.
+	err = cc.service.CancelarCorridaPeloMotorista(corridaID, req.MotoristaID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Corrida cancelada pelo motorista com sucesso",
+	})
+}

@@ -23,6 +23,7 @@ const (
 	StatusConcluidaNoTempo         = "concluída no tempo previsto"
 	StatusCanceladaPorExcessoTempo = "cancelada por excesso de tempo"
 	StatusCanceladaPeloUsuario     = "cancelada pelo usuário"
+	StatusCanceladaPeloMotorista   = "cancelada pelo motorista"
 )
 
 type Corrida struct {

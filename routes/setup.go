@@ -26,7 +26,6 @@ func SetupRoutes(app *fiber.App) {
 	})
 
 	// Configura todas as rotas
-	SetupDummyRoutes(api)
 	SetupMotoristaRoutes(api)
 	SetupCorridaRoutes(api, corridaService)
 	NotificacaoCorridaRoutes(api)
