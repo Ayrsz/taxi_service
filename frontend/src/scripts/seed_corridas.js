@@ -44,37 +44,75 @@ function randomPair() {
   };
 }
 
+// -------- helpers HTTP --------
+async function httpJson(url, init) {
+  const res = await fetch(url, init);
+  const text = await res.text();           // segura o corpo uma vez só
+  const data = text ? JSON.parse(text) : {};
+  return { res, data };
+}
+
+function extractId(res, data) {
+  const pick = (obj) => {
+    if (!obj) return null;
+    const v = obj.ID ?? obj.id ?? obj.Id ?? obj._id;
+    return v == null ? null : Number(v);
+  };
+
+  let id = pick(data)
+        ?? pick(data?.corrida)
+        ?? pick(data?.data);
+
+  if (!Number.isFinite(id)) {
+    const loc = res.headers.get('location') || res.headers.get('Location');
+    const m = loc && loc.match(/\/corridas\/(\d+)/);
+    if (m) id = Number(m[1]);
+  }
+
+  return Number.isFinite(id) ? id : null;
+}
+
 async function createRide(passageiroID, origem, destino) {
-  const res = await fetch(`${API}/corridas`, {
+  const { res, data } = await httpJson(`${API}/corridas`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ passageiroID, origem, destino })
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-  return res.json();
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${JSON.stringify(data)}`);
+  const id = extractId(res, data);
+  return { id, data };
 }
+
 async function rateRide(id, nota) {
-  const res = await fetch(`${API}/corridas/${id}/avaliar`, {
+  const { res, data } = await httpJson(`${API}/corridas/${id}/avaliar`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ nota })
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${JSON.stringify(data)}`);
 }
 
+// -------- main --------
 (async () => {
   console.log(`[seed] API = ${API}`);
   for (let i = 0; i < count; i++) {
     try {
       const pair = useRandom ? randomPair() : pickTwo();
-      const data = await createRide(1, pair.origem.coord, pair.destino.coord);
-      const id = data.ID ?? data.id;
-      process.stdout.write(`+ corrida ${id}: ${pair.origem.name} -> ${pair.destino.name}`);
+
+      const { id } = await createRide(1, pair.origem.coord, pair.destino.coord);
+
+      process.stdout.write(`+ corrida ${id ?? '?'}: ${pair.origem.name} -> ${pair.destino.name}`);
+
       if (shouldRate) {
-        const nota = 1 + Math.floor(Math.random() * 5);
-        await rateRide(id, nota);
-        process.stdout.write(`  | ${nota}★`);
+        if (id == null) {
+          process.stdout.write(`  | (sem ID na resposta; não foi possível avaliar)`);
+        } else {
+          const nota = 1 + Math.floor(Math.random() * 5);
+          await rateRide(id, nota);
+          process.stdout.write(`  | ${nota}★`);
+        }
       }
+
       process.stdout.write('\n');
       await new Promise(r => setTimeout(r, 120));
     } catch (e) {

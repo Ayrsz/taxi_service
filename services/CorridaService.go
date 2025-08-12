@@ -16,15 +16,15 @@ import (
 
 var corridas []models.Corrida 
 
-// func nextID() int {
-//     max := 0
-//     for _, c := range corridas {
-//         if c.ID > max {
-//             max = c.ID
-//         }
-//     }
-//     return max + 1
-// }
+func nextID() int {
+    max := 0
+    for _, c := range corridas {
+        if c.ID > max {
+            max = c.ID
+        }
+    }
+    return max + 1
+}
 
 
 // CorridaService gerencia a lógica de negócio das corridas.
