@@ -44,11 +44,11 @@
       });
       
       const corrida = response.data;
-      console.log('Corrida criada com sucesso! ID da Corrida:', corrida.ID);
-      alert(`Corrida criada com sucesso! O ID da sua corrida é: ${corrida.ID}`);
+      console.log('Corrida criada com sucesso! ID da Corrida:', corrida.id);
+      alert(`Corrida criada com sucesso! O ID da sua corrida é: ${corrida.id}`);
 
       // Navega para a página da corrida específica
-      navigate(`/corrida/${corrida.ID}`);
+      navigate(`/corrida/${corrida.id}`);
 
     } catch (error) {
       console.error('Erro ao iniciar a corrida:', error);

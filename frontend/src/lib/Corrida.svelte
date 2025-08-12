@@ -17,6 +17,10 @@
     baseURL: 'http://localhost:3000/api',
   });
 
+
+  console.log("O valor do ID recebido é:", id); // Adicione esta linha para depurar
+  
+
   onMount(() => {
     map = L.map(mapElement).setView([-23.55052, -46.633308], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -55,16 +59,26 @@
 
   // 3. Esta função agora APENAS faz a chamada para a API
   async function executeCancel() {
-    showCancelModal = false; // Esconde o modal
-    try {
-      await api.post(`/corrida/${id}/cancelar`);
-      alert('Sua corrida foi cancelada.'); // Você pode substituir por um toast/notificação
-      navigate('/');
-    } catch (error) {
-      console.error('Erro ao cancelar a corrida:', error);
-      alert('Não foi possível cancelar a corrida.');
-    }
+  showCancelModal = false; // Esconde o modal
+  try {
+    // ID do motorista que está a cancelar (para este exemplo, usamos um valor fixo)
+    const motoristaIdParaCancelar = "1"; // Corresponde ao motorista_joao dos seus testes
+
+    // 1. Endpoint corrigido para /cancelar/motorista
+    // 2. Adicionado o corpo (payload) com o motorista_id
+    await api.post(`/corrida/${id}/cancelar/motorista`, {
+      motorista_id: motoristaIdParaCancelar 
+    });
+
+    alert('Sua corrida foi cancelada.');
+    navigate('/');
+  } catch (error) {
+    console.error('Erro ao cancelar a corrida:', error);
+    // Extrai a mensagem de erro do backend, se disponível
+    const errorMessage = error.response?.data?.error || 'Não foi possível cancelar a corrida.';
+    alert(errorMessage);
   }
+}
   
   // Função para finalizar a corrida (não foi alterada)
   async function finishRide() {
