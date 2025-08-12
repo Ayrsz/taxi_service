@@ -32,15 +32,12 @@
       return;
     }
 
-    try {
-      // Define um ID de passageiro fixo para a demonstração
-      const passageiroId = 1;
-
-      const response = await axios.post('http://localhost:3000/api/corrida', {
-        passageiroId: passageiroId, 
+   try {
+      const passageiroID = 1; // nome do campo correto
+      const response = await axios.post('http://localhost:3000/api/corridas', {
+        passageiroID: passageiroId,
         origem: `${originCoords.lat}, ${originCoords.lng}`,
         destino: `${destinationCoords.lat}, ${destinationCoords.lng}`,
-        // O backend irá calcular o tempo estimado, então não precisamos enviar
       });
       
       const corrida = response.data;
@@ -105,5 +102,6 @@
   <div class="actions">
     <button class="clear-btn" on:click={clearSelection}>Limpar Seleção</button>
     <button on:click={startRide}>Chamar Taxi</button>
+    <button on:click={() => navigate('/historico')}>Histórico de Corridas</button>
   </div>
 </div>
