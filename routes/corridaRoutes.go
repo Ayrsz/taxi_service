@@ -16,7 +16,6 @@ func SetupCorridaRoutes(api fiber.Router, corridaService *services.CorridaServic
 	corridaGroup.Post("/monitorar", corridaController.MonitorarCorrida)
 	corridaGroup.Put("/:id/aceitar", corridaController.AceitarCorrida)
 	corridaGroup.Put("/:id/posicao", corridaController.AtualizarPosicao)
-	corridaGroup.Post("/:id/cancelar", corridaController.CancelarCorrida) // Nova rota
 	corridaGroup.Post("/:id/finalizar", corridaController.FinalizarCorrida) // Nova rota
     corridaGroup.Post("/:id/cancelar/motorista", corridaController.CancelarCorridaPeloMotorista) 
 

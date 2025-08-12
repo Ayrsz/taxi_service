@@ -101,24 +101,6 @@ func (s *CorridaService) AtualizarPosicao(corridaID int, lat, lng float64) error
 	return nil
 }
 
-// CancelarCorrida cancela uma corrida que está em andamento.
-func (s *CorridaService) CancelarCorrida(corridaID int) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	corrida, exists := s.corridas[corridaID]
-	if !exists {
-		return fmt.Errorf("corrida com ID %d não encontrada para cancelar", corridaID)
-	}
-
-	corrida.Status = models.StatusCanceladaPeloUsuario
-	now := time.Now()
-    corrida.DataFim = &now
-	fmt.Printf("Corrida %d: Cancelada pelo usuário.\n", corrida.ID)
-
-	return nil
-}
-
 // FinalizarCorrida finaliza uma corrida, aplicando a lógica de tempo.
 func (s *CorridaService) FinalizarCorrida(corridaID int) error {
 	s.mutex.Lock()

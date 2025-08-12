@@ -106,19 +106,6 @@ func (cc *CorridaController) AtualizarPosicao(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-// CancelarCorrida (POST /corrida/:id/cancelar) cancela uma corrida.
-func (cc *CorridaController) CancelarCorrida(c *fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID da corrida inválido"})
-	}
-
-	if err := cc.service.CancelarCorrida(id); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	return c.SendStatus(fiber.StatusOK)
-}
 
 // FinalizarCorrida (POST /corrida/:id/finalizar) finaliza uma corrida.
 func (cc *CorridaController) FinalizarCorrida(c *fiber.Ctx) error {
@@ -169,35 +156,37 @@ type cancelamentoMotoristaRequest struct {
 
 // CancelarCorridaPeloMotorista lida com a requisição de cancelamento de uma corrida por um motorista.
 func (cc *CorridaController) CancelarCorridaPeloMotorista(c *fiber.Ctx) error {
-	corridaID, err := c.ParamsInt("id")
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "ID da corrida inválido",
-		})
-	}
+    corridaID, err := c.ParamsInt("id")
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "ID da corrida inválido",
+        })
+    }
 
-	var req cancelamentoMotoristaRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Corpo da requisição inválido",
-		})
-	}
+    var req cancelamentoMotoristaRequest
+    if err := c.BodyParser(&req); err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "Corpo da requisição inválido",
+        })
+    }
 
-	if req.MotoristaID == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "O campo 'motorista_id' é obrigatório",
-		})
-	}
+    if req.MotoristaID == "" {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "O campo 'motorista_id' é obrigatório",
+        })
+    }
 
-	// REATIVADO: A chamada ao serviço agora funcionará corretamente.
-	err = cc.service.CancelarCorridaPeloMotorista(corridaID, req.MotoristaID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+    err = cc.service.CancelarCorridaPeloMotorista(corridaID, req.MotoristaID)
+    if err != nil {
+        // --- MUDANÇA PRINCIPAL AQUI ---
+        // Erros de regra de negócio (como "não pode cancelar corrida finalizada")
+        // devem retornar um status 400, não 500.
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": err.Error(),
+        })
+    }
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Corrida cancelada pelo motorista com sucesso",
-	})
+    return c.Status(fiber.StatusOK).JSON(fiber.Map{
+        "message": "Corrida cancelada pelo motorista com sucesso",
+    })
 }
