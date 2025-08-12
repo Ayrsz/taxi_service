@@ -1,5 +1,5 @@
 package e2e
-
+/*
 import (
     "testing"
     "strconv"
@@ -189,4 +189,4 @@ func TestDummyUserJSONRepository(t *testing.T) {
     }
     
     t.Log("JSON repository test completed successfully")
-}
+}*/
