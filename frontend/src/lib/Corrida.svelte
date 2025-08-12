@@ -36,7 +36,7 @@
       const response = await api.get(`/corrida/${id}`);
       ride = response.data;
       rideStatus = formatStatus(ride.Status);
-
+      
       if (ride.MotoristaLat && ride.MotoristaLng) {
         const latLng = [ride.MotoristaLat, ride.MotoristaLng];
         if (!motoristaMarker) {
@@ -52,7 +52,11 @@
       }
     } catch (error) {
       console.error('Erro ao buscar dados da corrida:', error);
-      rideStatus = 'Erro ao carregar dados.';
+      if (error.response?.status === 404) {
+        rideStatus = 'Corrida não encontrada.';
+      } else {
+        rideStatus = 'Erro ao carregar dados da corrida.';
+      }
     }
   }
 
