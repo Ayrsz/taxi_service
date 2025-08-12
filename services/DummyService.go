@@ -1,5 +1,5 @@
 package services
-
+/*
 import (
     "encoding/json"
     "errors"
@@ -113,4 +113,4 @@ func DeleteDummyUser(id int) error {
         return errors.New("user not found")
     }
     return writeUsers(newUsers)
-}
+}*/

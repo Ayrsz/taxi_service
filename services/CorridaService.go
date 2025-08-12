@@ -238,7 +238,7 @@ func (s *CorridaService) CancelarCorridaPeloMotorista(corridaID int, motoristaID
 		models.StatusConcluidaNoTempo,
 		models.StatusCanceladaPeloUsuario,
 		models.StatusCanceladaPeloMotorista,
-		models.StatusEmAndamento
+		models.StatusEmAndamento,
 		models.StatusCanceladaPorExcessoTempo:
 		return fmt.Errorf("corrida %d não pode ser cancelada pois seu status é '%s'", corridaID, corrida.Status)
 	}
