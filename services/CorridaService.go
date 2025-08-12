@@ -217,3 +217,36 @@ func CarregarCorridasDoArquivo() {
 func GetCorridas() []models.Corrida {
 	return corridas
 }
+
+func (s *CorridaService) CancelarCorridaPeloMotorista(corridaID int, motoristaID int) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	corrida, exists := s.corridas[corridaID]
+	if !exists {
+		return fmt.Errorf("corrida com ID %d não encontrada", corridaID)
+	}
+
+	// Verifica se o motorista que está cancelando é o mesmo da corrida
+	if corrida.MotoristaID != motoristaID {
+		return fmt.Errorf("motorista %d não tem permissão para cancelar a corrida %d", motoristaID, corridaID)
+	}
+
+	// Verifica se a corrida pode ser cancelada (não está finalizada ou já cancelada)
+	switch corrida.Status {
+	case models.StatusConcluidaAntecedencia,
+		models.StatusConcluidaNoTempo,
+		models.StatusCanceladaPeloUsuario,
+		models.StatusCanceladaPeloMotorista,
+		models.StatusEmAndamento
+		models.StatusCanceladaPorExcessoTempo:
+		return fmt.Errorf("corrida %d não pode ser cancelada pois seu status é '%s'", corridaID, corrida.Status)
+	}
+	
+	corrida.Status = models.StatusCanceladaPeloMotorista
+	now := time.Now()
+	corrida.DataFim = &now
+	fmt.Printf("Corrida %d: Cancelada pelo motorista %d.\n", corrida.ID, motoristaID)
+
+	return nil
+}
