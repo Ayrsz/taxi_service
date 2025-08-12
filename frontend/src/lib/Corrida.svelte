@@ -134,6 +134,7 @@
   <Modal 
     title="Cancelar Corrida"
     message="Esta ação não pode ser desfeita. Você tem certeza que deseja cancelar sua corrida?"
+    confirmLabel="Confirmar Cancelamento"
     on:confirm={executeCancel}
     on:close={() => showCancelModal = false}
   />
@@ -143,6 +144,7 @@
   <Modal 
     title="Finalizar Corrida"
     message="Você confirma que chegou ao seu destino e deseja finalizar a corrida?"
+    confirmLabel="Confirmar Finalização"
     on:confirm={executeFinishRide}
     on:close={() => showFinishModal = false}
   />

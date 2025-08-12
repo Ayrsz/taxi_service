@@ -4,6 +4,8 @@
   // Props para customizar o modal
   export let title = 'Confirmar Ação';
   export let message = 'Você tem certeza?';
+  export let confirmLabel = 'Confirmar'; // NOVA PROP
+
 
   // 1. Inicialize o dispatcher
   const dispatch = createEventDispatcher();
@@ -84,13 +86,12 @@
 </style>
 
 <div class="modal-overlay" on:click={handleClose}>
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="modal-box" on:click|stopPropagation>
     <h2>{title}</h2>
     <p>{message}</p>
     <div class="modal-actions">
       <button class="close-btn" on:click={handleClose}>Voltar</button>
-      <button class="confirm-btn" on:click={handleConfirm}>Confirmar Cancelamento</button>
+      <button class="confirm-btn" on:click={handleConfirm}>{confirmLabel}</button>
     </div>
   </div>
 </div>
