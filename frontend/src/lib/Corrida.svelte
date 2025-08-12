@@ -35,8 +35,8 @@
     try {
       const response = await api.get(`/corrida/${id}`);
       ride = response.data;
-      rideStatus = formatStatus(ride.Status);
-
+      rideStatus = formatStatus(ride.status);
+      console.log("Status da corrida: ", rideStatus);
       if (ride.MotoristaLat && ride.MotoristaLng) {
         const latLng = [ride.MotoristaLat, ride.MotoristaLng];
         if (!motoristaMarker) {
@@ -47,7 +47,7 @@
         }
       }
 
-      if (ride.Status.startsWith('concluída') || ride.Status.startsWith('cancelada')) {
+      if (ride.status.startsWith('concluída') || ride.status.startsWith('cancelada')) {
         setTimeout(() => navigate('/'), 3000);
       }
     } catch (error) {

@@ -190,3 +190,23 @@ func (cc *CorridaController) CancelarCorridaPeloMotorista(c *fiber.Ctx) error {
         "message": "Corrida cancelada pelo motorista com sucesso",
     })
 }
+
+func (cc *CorridaController) IniciarCorrida(c *fiber.Ctx) error {
+    corridaID, err := c.ParamsInt("id")
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "ID da corrida inválido",
+        })
+    }
+
+    err = cc.service.IniciarCorrida(corridaID)
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": err.Error(),
+        })
+    }
+
+    return c.Status(fiber.StatusOK).JSON(fiber.Map{
+        "message": "Corrida iniciada com sucesso",
+    })
+}

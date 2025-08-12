@@ -22,7 +22,7 @@ func SetupCorridaRoutes(api fiber.Router, corridaService *services.CorridaServic
 	api.Post("/corridas/:id/avaliar", corridaController.AvaliarCorrida)
 	api.Post("/corridas", corridaController.CriarCorrida)
 	api.Get("/corridas", corridaController.ListarCorridas)
-
+	api.Post("/corrida/:id/iniciar", corridaController.IniciarCorrida)
 	// Manter a rota OPTIONS para o CORS
 	corridaGroup.Options("/monitorar", func(c *fiber.Ctx) error {
 		return c.SendStatus(200)

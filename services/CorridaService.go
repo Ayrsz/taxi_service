@@ -198,6 +198,27 @@ func GetCorridas() []models.Corrida {
 	return corridas
 }
 
+func (s *CorridaService) IniciarCorrida(corridaID int) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	corrida, exists := s.corridas[corridaID]
+	if !exists {
+		return fmt.Errorf("corrida com ID %d não encontrada", corridaID)
+	}
+
+	// Apenas permite iniciar se o motorista já foi encontrado
+	if corrida.Status != models.StatusMotoristaEncontrado {
+		return fmt.Errorf("corrida %d não pode ser iniciada, pois seu status é '%s'", corridaID, corrida.Status)
+	}
+
+	corrida.Status = models.StatusEmAndamento
+	fmt.Printf("Corrida %d: Iniciada e agora está em andamento.\n", corrida.ID)
+
+	return nil
+}
+
+
 // ALTERADO: A função agora aceita o ID do motorista como string para alinhar com o modelo e o controller.
 func (s *CorridaService) CancelarCorridaPeloMotorista(corridaID int, motoristaIDStr string) error {
 	s.mutex.Lock()
