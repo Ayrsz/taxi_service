@@ -5,11 +5,12 @@
   export let title = 'Confirmar Ação';
   export let message = 'Você tem certeza?';
 
+  // 1. Inicialize o dispatcher
   const dispatch = createEventDispatcher();
 
-  // Funções que disparam eventos para o componente pai
+  // 2. Adicione a função handleConfirm que estava em falta
   function handleConfirm() {
-    dispatch('confirm');
+    dispatch('confirm'); // Dispara o evento 'confirm' para o componente pai
   }
 
   function handleClose() {
