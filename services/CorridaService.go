@@ -3,13 +3,11 @@ package services
 import (
 	"taxi-service/models"
 	"time"
-
+	"strconv"
 	"errors"
-
 	"encoding/json"
 	"os"
 	"log"
-
 	"fmt"
 	"sync"
 )
@@ -218,21 +216,27 @@ func GetCorridas() []models.Corrida {
 	return corridas
 }
 
-func (s *CorridaService) CancelarCorridaPeloMotorista(corridaID int, motoristaID int) error {
+// ALTERADO: A função agora aceita o ID do motorista como string para alinhar com o modelo e o controller.
+func (s *CorridaService) CancelarCorridaPeloMotorista(corridaID int, motoristaIDStr string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+
+	// Converte o ID string do motorista para int para comparação,
+	// já que o campo na struct Corrida é int.
+	motoristaID, err := strconv.Atoi(motoristaIDStr)
+	if err != nil {
+		return fmt.Errorf("ID do motorista inválido: '%s'", motoristaIDStr)
+	}
 
 	corrida, exists := s.corridas[corridaID]
 	if !exists {
 		return fmt.Errorf("corrida com ID %d não encontrada", corridaID)
 	}
 
-	// Verifica se o motorista que está cancelando é o mesmo da corrida
 	if corrida.MotoristaID != motoristaID {
 		return fmt.Errorf("motorista %d não tem permissão para cancelar a corrida %d", motoristaID, corridaID)
 	}
 
-	// Verifica se a corrida pode ser cancelada (não está finalizada ou já cancelada)
 	switch corrida.Status {
 	case models.StatusConcluidaAntecedencia,
 		models.StatusConcluidaNoTempo,
@@ -242,7 +246,7 @@ func (s *CorridaService) CancelarCorridaPeloMotorista(corridaID int, motoristaID
 		models.StatusCanceladaPorExcessoTempo:
 		return fmt.Errorf("corrida %d não pode ser cancelada pois seu status é '%s'", corridaID, corrida.Status)
 	}
-	
+
 	corrida.Status = models.StatusCanceladaPeloMotorista
 	now := time.Now()
 	corrida.DataFim = &now
