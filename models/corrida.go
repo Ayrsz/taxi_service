@@ -49,9 +49,3 @@ type Corrida struct {
 	MotoristaLat     float64    `json:"motoristaLat"`     // latitude do motorista
 	MotoristaLng     float64    `json:"motoristaLng"`     // longitude do motorista
 }
-
-const (
-	StatusAndamento = "andamento"
-	StatusCancelada = "cancelada"
-	StatusFinalizada = "finalizada"
-)

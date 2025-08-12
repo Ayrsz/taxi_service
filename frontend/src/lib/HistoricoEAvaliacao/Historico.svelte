@@ -159,17 +159,19 @@
     display: grid;
     grid-template-columns: 64px 1fr auto;
     align-items: center;
-    gap: 12px;
+    column-gap: 24px;
     background: #eaeaea;
     border-radius: 16px;
     padding: 12px;
   }
   .avatar {
-    width: 64px; height: 64px;
+    width: 72px;
+    height: 72px;
     border-radius: 16px;
-    background: #fff;
-  }
-  .meta { display: flex; flex-direction: column; gap: 4px; }
+    background: #fff url("/icons/car.png") center / 60% no-repeat;
+    box-shadow: 0 1px 0 rgba(0,0,0,.05) inset;
+}
+  .meta { display: flex; flex-direction: column; gap: 4px; padding-left: 4px; }
   .route {
     font-weight: 700; color: #111;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;

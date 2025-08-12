@@ -16,6 +16,15 @@ import (
 
 var corridas []models.Corrida 
 
+// func nextID() int {
+//     max := 0
+//     for _, c := range corridas {
+//         if c.ID > max {
+//             max = c.ID
+//         }
+//     }
+//     return max + 1
+// }
 
 
 // CorridaService gerencia a lógica de negócio das corridas.
@@ -197,6 +206,15 @@ func AvaliarCorrida(id int, nota int) error {
 }
 
 func (s *CorridaService) AdicionarCorrida(corrida models.Corrida) {
+	if corrida.ID == 0 {
+		corrida.ID = nextID()
+	}
+	if corrida.DataInicio.IsZero() {
+		corrida.DataInicio = time.Now()
+	}
+	// (dá pra inicializar status aqui também)
+	// if corrida.Status == "" { corrida.Status = models.StatusProcurandoMotorista }
+
 	corridas = append(corridas, corrida)
 }
 
