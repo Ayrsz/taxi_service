@@ -8,6 +8,21 @@ import (
 	"strconv"
 )
 
+
+const (
+	// Status originais (mantidos para compatibilidade)
+	NoBodyRequestError  = "Não foi possível decodificar o corpo da requisição"
+	NoIDRequestedError  = "PassageiroID é obrigatório"
+	InvalidIDError = "ID da corrida inválido"
+	InvalidRiderIDError = "ID do motorista inválido"
+
+	FinishedRide = "Corrida finalizada"
+	StartedRide = "Corrida iniciada"
+	CancelRide = "Corrida cancelada"
+
+)
+
+
 // CorridaController gerencia as requisições HTTP para corridas.
 type CorridaController struct {
 	service *services.CorridaService
@@ -22,11 +37,11 @@ func NewCorridaController(service *services.CorridaService) *CorridaController {
 func (cc *CorridaController) CriarCorrida(c *fiber.Ctx) error {
 	var corridaInput models.Corrida
 	if err := c.BodyParser(&corridaInput); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Não foi possível decodificar o corpo da requisição"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": NoBodyRequestError})
 	}
 
 	if corridaInput.PassageiroID == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "PassageiroID é obrigatório"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": NoIDRequestedError})
 	}
 
 	corrida, err := cc.service.CriarNovaCorrida(corridaInput)
@@ -43,7 +58,7 @@ func (cc *CorridaController) CriarCorrida(c *fiber.Ctx) error {
 func (cc *CorridaController) GetCorrida(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID da corrida inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": InvalidIDError})
 	}
 
 	corrida, err := cc.service.GetCorridaPorID(id)
@@ -65,7 +80,7 @@ func (cc *CorridaController) MonitorarCorrida(c *fiber.Ctx) error {
 func (cc *CorridaController) AceitarCorrida(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID da corrida inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": InvalidIDError})
 	}
 
 	var body struct {
@@ -73,7 +88,7 @@ func (cc *CorridaController) AceitarCorrida(c *fiber.Ctx) error {
 	}
 
 	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Corpo da requisição inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": NoBodyRequestError})
 	}
 
 	if err := cc.service.AceitarCorrida(id, body.MotoristaID); err != nil {
@@ -87,7 +102,7 @@ func (cc *CorridaController) AceitarCorrida(c *fiber.Ctx) error {
 func (cc *CorridaController) AtualizarPosicao(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID da corrida inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": InvalidIDError})
 	}
 
 	var body struct {
@@ -96,7 +111,7 @@ func (cc *CorridaController) AtualizarPosicao(c *fiber.Ctx) error {
 	}
 
 	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Corpo da requisição inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": NoBodyRequestError})
 	}
 
 	if err := cc.service.AtualizarPosicao(id, body.Lat, body.Lng); err != nil {
@@ -111,7 +126,7 @@ func (cc *CorridaController) AtualizarPosicao(c *fiber.Ctx) error {
 func (cc *CorridaController) FinalizarCorrida(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID da corrida inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": InvalidIDError})
 	}
 
 	if err := cc.service.FinalizarCorrida(id); err != nil {
@@ -125,14 +140,14 @@ func (cc *CorridaController) AvaliarCorrida(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": InvalidIDError})
 	}
 
 	var input struct {
 		Nota int `json:"nota"`
 	}
 	if err := c.BodyParser(&input); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "JSON inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": NoBodyRequestError})
 	}
 
 	if err := services.AvaliarCorrida(id, input.Nota); err != nil {
@@ -159,20 +174,20 @@ func (cc *CorridaController) CancelarCorridaPeloMotorista(c *fiber.Ctx) error {
     corridaID, err := c.ParamsInt("id")
     if err != nil {
         return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "ID da corrida inválido",
+            "error": InvalidIDError,
         })
     }
 
     var req cancelamentoMotoristaRequest
     if err := c.BodyParser(&req); err != nil {
         return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "Corpo da requisição inválido",
+            "error": NoBodyRequestError,
         })
     }
 
     if req.MotoristaID == "" {
         return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "O campo 'motorista_id' é obrigatório",
+            "error": InvalidRiderIDError,
         })
     }
 
@@ -187,7 +202,7 @@ func (cc *CorridaController) CancelarCorridaPeloMotorista(c *fiber.Ctx) error {
     }
 
     return c.Status(fiber.StatusOK).JSON(fiber.Map{
-        "message": "Corrida cancelada pelo motorista com sucesso",
+        "message": CancelRIde,
     })
 }
 
@@ -195,7 +210,7 @@ func (cc *CorridaController) IniciarCorrida(c *fiber.Ctx) error {
     corridaID, err := c.ParamsInt("id")
     if err != nil {
         return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "ID da corrida inválido",
+            "error": InvalidIDError,
         })
     }
 
@@ -207,6 +222,6 @@ func (cc *CorridaController) IniciarCorrida(c *fiber.Ctx) error {
     }
 
     return c.Status(fiber.StatusOK).JSON(fiber.Map{
-        "message": "Corrida iniciada com sucesso",
+        "message": StartedRide,
     })
 }
