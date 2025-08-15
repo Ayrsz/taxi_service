@@ -60,7 +60,7 @@ func (s *CorridaService) GetCorridaPorID(id int) (*models.Corrida, error) {
 
 	corrida, exists := s.corridas[id]
 	if !exists {
-		return nil, fmt.Errorf("corrida com ID %d não encontrada", id)
+		return nil, fmt.Errorf("corrida com ID %d não encontrada, na procura", id)
 	}
 	return corrida, nil
 }
@@ -98,24 +98,6 @@ func (s *CorridaService) AtualizarPosicao(corridaID int, lat, lng float64) error
 
 	corrida.MotoristaLat = lat
 	corrida.MotoristaLng = lng
-	return nil
-}
-
-// CancelarCorrida cancela uma corrida que está em andamento.
-func (s *CorridaService) CancelarCorrida(corridaID int) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	corrida, exists := s.corridas[corridaID]
-	if !exists {
-		return fmt.Errorf("corrida com ID %d não encontrada", corridaID)
-	}
-
-	corrida.Status = models.StatusCanceladaPeloUsuario
-	now := time.Now()
-    corrida.DataFim = &now
-	fmt.Printf("Corrida %d: Cancelada pelo usuário.\n", corrida.ID)
-
 	return nil
 }
 
@@ -216,6 +198,27 @@ func GetCorridas() []models.Corrida {
 	return corridas
 }
 
+func (s *CorridaService) IniciarCorrida(corridaID int) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	corrida, exists := s.corridas[corridaID]
+	if !exists {
+		return fmt.Errorf("corrida com ID %d não encontrada", corridaID)
+	}
+
+	// Apenas permite iniciar se o motorista já foi encontrado
+	if corrida.Status != models.StatusMotoristaEncontrado {
+		return fmt.Errorf("corrida %d não pode ser iniciada, pois seu status é '%s'", corridaID, corrida.Status)
+	}
+
+	corrida.Status = models.StatusEmAndamento
+	fmt.Printf("Corrida %d: Iniciada e agora está em andamento.\n", corrida.ID)
+
+	return nil
+}
+
+
 // ALTERADO: A função agora aceita o ID do motorista como string para alinhar com o modelo e o controller.
 func (s *CorridaService) CancelarCorridaPeloMotorista(corridaID int, motoristaIDStr string) error {
 	s.mutex.Lock()
@@ -234,7 +237,7 @@ func (s *CorridaService) CancelarCorridaPeloMotorista(corridaID int, motoristaID
 	}
 
 	if corrida.MotoristaID != motoristaID {
-		return fmt.Errorf("motorista %d não tem permissão para cancelar a corrida %d", motoristaID, corridaID)
+		return fmt.Errorf("motorista %d não pode cancelar a corrida %d, status %s", motoristaID, corridaID, corrida.Status)
 	}
 
 	switch corrida.Status {

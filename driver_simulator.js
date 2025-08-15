@@ -12,11 +12,14 @@ function getArg(argName, defaultValue) {
 // --- Configuração ---
 const API_BASE_URL = 'http://localhost:3000/api';
 const CORRIDA_ID = getArg('corrida-id', null);
-const MOTORISTA_ID = getArg('motorista-id', 456);
+// --- ALTERAÇÃO PRINCIPAL ---
+// O ID do motorista foi alterado para 1, para corresponder ao ID
+// que o botão de cancelar no frontend (Corrida.svelte) usa.
+const MOTORISTA_ID = getArg('motorista-id', 1);
 const SCENARIO = getArg('cenario', 'ON_TIME');
+const TEMPO_ESPERA_SEGUNDOS = 10; // Tempo em segundos que a corrida fica como "motorista encontrado"
 // --------------------
 
-const UPDATE_INTERVAL_MS = 2000;
 const TOTAL_STEPS = 15;
 
 if (!CORRIDA_ID) {
@@ -34,7 +37,6 @@ const api = axios.create({
  */
 async function getRideDetails() {
   try {
-    console.log(`Buscando detalhes da corrida ${CORRIDA_ID}...`);
     const response = await api.get(`/corrida/${CORRIDA_ID}`);
     return response.data;
   } catch (error) {
@@ -50,10 +52,13 @@ async function aceitarCorrida() {
   try {
     console.log(`Motorista ${MOTORISTA_ID} tentando aceitar a corrida ${CORRIDA_ID}...`);
     await api.put(`/corrida/${CORRIDA_ID}/aceitar`, { motoristaId: MOTORISTA_ID });
-    console.log(`Corrida ${CORRIDA_ID} aceita com sucesso!`);
-    console.log('CYPRESS_TASK_RIDE_ACCEPTED'); // Signal for Cypress task
+    console.log(`Corrida ${CORRIDA_ID} aceita com sucesso! Status: motorista_encontrado.`);
     return true;
   } catch (error) {
+    if (error.response && error.response.status === 400) {
+        console.log('Corrida já está em andamento, não é necessário aceitar.');
+        return true;
+    }
     console.error('Erro ao aceitar a corrida:', error.response ? error.response.data : error.message);
     return false;
   }
@@ -70,7 +75,7 @@ function iniciarViagem(origem, destino, tempoEstimadoMin) {
   const [latDestino, lngDestino] = destino.split(',').map(Number);
 
   let currentLat = latOrigem;
-  let currentLng = lngDestino;
+  let currentLng = lngOrigem; 
 
   const latStep = (latDestino - latOrigem) / TOTAL_STEPS;
   const lngStep = (lngDestino - lngOrigem) / TOTAL_STEPS;
@@ -83,6 +88,14 @@ function iniciarViagem(origem, destino, tempoEstimadoMin) {
   console.log(`Cenário selecionado: ${SCENARIO}. A viagem simulada durará ${totalViagemMs / 1000} segundos.`);
 
   const interval = setInterval(async () => {
+    const currentRideState = await getRideDetails();
+    if (!currentRideState || (currentRideState.status && currentRideState.status.includes('cancelada'))) {
+        console.log('--- CORRIDA CANCELADA ---');
+        console.log('A simulação foi interrompida porque a corrida foi cancelada.');
+        clearInterval(interval);
+        return;
+    }
+
     if (stepCount >= TOTAL_STEPS) {
       clearInterval(interval);
       console.log('Motorista chegou ao destino!');
@@ -103,7 +116,7 @@ function iniciarViagem(origem, destino, tempoEstimadoMin) {
       });
       console.log(`[Passo ${stepCount}/${TOTAL_STEPS}] Posição atualizada.`);
     } catch (error) {
-      console.error('Erro ao atualizar a posição:', error.response ? error.response.data : error.message);
+      console.error(`Erro ao atualizar a posição no passo ${stepCount}:`, error.response ? error.response.data : error.message);
     }
   }, updateInterval);
 }
@@ -113,9 +126,9 @@ function calcularDuracaoViagem(tempoEstimadoMin) {
 
     switch (SCENARIO.toUpperCase()) {
         case 'EARLY':
-            return tempoEstimadoMs - 30000;
+            return Math.max(5000, tempoEstimadoMs - 5000); 
         case 'LATE':
-            return tempoEstimadoMs + 30000;
+            return tempoEstimadoMs + 5000;
         case 'AUTO_CANCEL':
             return tempoEstimadoMs * 100; 
         case 'ON_TIME':
@@ -138,6 +151,26 @@ async function finalizarCorrida() {
 }
 
 /**
+ * NOVO: Notifica o backend que a corrida está a começar e depois inicia a viagem.
+ */
+async function iniciarCorridaEViagem(rideDetails) {
+    try {
+        console.log('Notificando o backend: a corrida está começando...');
+        // NOTA PARA O DESENVOLVEDOR:
+        // É necessário criar este endpoint no backend (Go).
+        // Ele deve receber um POST em /api/corrida/:id/iniciar e mudar o status da corrida
+        // de 'motorista_encontrado' para 'em_andamento'.
+        await api.post(`/corrida/${CORRIDA_ID}/iniciar`);
+        console.log('Corrida iniciada com sucesso no backend. Status: em_andamento.');
+
+        // Apenas após iniciar a corrida no backend, começamos a simulação da viagem.
+        iniciarViagem(rideDetails.origem, rideDetails.destino, rideDetails.tempoEstimado);
+    } catch (error) {
+        console.error('Erro ao tentar iniciar a corrida no backend:', error.response ? error.response.data : error.message);
+    }
+}
+
+/**
  * Função principal que orquestra a simulação.
  */
 async function iniciarSimulacao() {
@@ -149,16 +182,19 @@ async function iniciarSimulacao() {
     return;
   }
 
-  if (!rideDetails.Origem || !rideDetails.Destino) {
+  if (!rideDetails.origem || !rideDetails.destino) {
       console.log('A corrida não tem uma origem ou destino definidos. Abortando simulação.');
       return;
   }
 
   const aceita = await aceitarCorrida();
   if (aceita) {
+    // ALTERAÇÃO: Após aceitar, esperamos um tempo antes de iniciar a viagem.
+    console.log(`Motorista encontrado. A corrida começará em ${TEMPO_ESPERA_SEGUNDOS} segundos. Cancele agora se desejar.`);
     setTimeout(() => {
-        iniciarViagem(rideDetails.Origem, rideDetails.Destino, rideDetails.TempoEstimado);
-    }, 2000);
+        // Depois da espera, notificamos o backend e iniciamos a viagem.
+        iniciarCorridaEViagem(rideDetails);
+    }, TEMPO_ESPERA_SEGUNDOS * 1000);
   }
 }
 

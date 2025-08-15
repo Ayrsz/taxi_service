@@ -2,41 +2,41 @@
   import { onMount } from 'svelte';
   import { navigate } from 'svelte-routing';
   import axios from 'axios';
+  import Modal from './ConfirmacaoFimCorrida.svelte';
 
-  // O ID da corrida será passado pelo router
   export let id;
 
   let mapElement;
   let map;
-  let ride = null; // Objeto completo da corrida
+  let ride = null;
   let rideStatus = 'Carregando informações...';
   let motoristaMarker;
+
+  // Variáveis para controlar CADA modal individualmente
+  let showCancelModal = false;
+  let showFinishModal = false;
 
   const api = axios.create({
     baseURL: 'http://localhost:3000/api',
   });
-
+  
   onMount(() => {
     map = L.map(mapElement).setView([-23.55052, -46.633308], 14);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Busca os dados da corrida e inicia o monitoramento
     fetchRideData();
-    const interval = setInterval(fetchRideData, 3000); // Verifica a cada 3 segundos
-
-    return () => clearInterval(interval); // Limpa o intervalo quando o componente é destruído
+    const interval = setInterval(fetchRideData, 3000);
+    return () => clearInterval(interval);
   });
 
   async function fetchRideData() {
     try {
       const response = await api.get(`/corrida/${id}`);
       ride = response.data;
-      rideStatus = formatStatus(ride.Status);
-
-      // Atualiza a posição do motorista no mapa
+      rideStatus = formatStatus(ride.status);
+      console.log("Status da corrida: ", rideStatus);
       if (ride.MotoristaLat && ride.MotoristaLng) {
         const latLng = [ride.MotoristaLat, ride.MotoristaLng];
         if (!motoristaMarker) {
@@ -47,47 +47,46 @@
         }
       }
 
-      // Se a corrida foi finalizada ou cancelada, para de monitorar e redireciona
-      if (ride.Status.startsWith('concluída') || ride.Status.startsWith('cancelada')) {
+      if (ride.status.startsWith('concluída') || ride.status.startsWith('cancelada')) {
         setTimeout(() => navigate('/'), 3000);
       }
-
     } catch (error) {
       console.error('Erro ao buscar dados da corrida:', error);
       rideStatus = 'Erro ao carregar dados.';
     }
   }
 
-  async function cancelRide() {
-    if (confirm('Tem certeza que deseja cancelar a corrida?')) {
-      try {
-        await api.post(`/corrida/${id}/cancelar`);
-        alert('Sua corrida foi cancelada.');
-        navigate('/');
-      } catch (error) {
-        console.error('Erro ao cancelar a corrida:', error);
-        alert('Não foi possível cancelar a corrida.');
-      }
+  async function executeCancel() {
+    showCancelModal = false;
+    try {
+      const motoristaIdParaCancelar = "1";
+      await api.post(`/corrida/${id}/cancelar/motorista`, {
+        motorista_id: motoristaIdParaCancelar 
+      });
+      alert('Sua corrida foi cancelada.');
+      navigate('/');
+    } catch (error) {
+      console.error('Erro ao cancelar a corrida:', error);
+      const errorMessage = error.response?.data?.error || 'Não foi possível cancelar a corrida.';
+      alert(errorMessage);
     }
   }
   
-  async function finishRide() {
-    if (confirm('Confirmar a finalização da corrida?')) {
-      try {
-        await api.post(`/corrida/${id}/finalizar`);
-        alert('Corrida finalizada com sucesso!');
-        navigate('/');
-      } catch (error) {
-        console.error('Erro ao finalizar a corrida:', error);
-        alert('Não foi possível finalizar a corrida.');
-      }
+  async function executeFinishRide() {
+    showFinishModal = false; // Esconde o modal de finalização
+    try {
+      await api.post(`/corrida/${id}/finalizar`);
+      alert('Corrida finalizada com sucesso!');
+      navigate('/');
+    } catch (error) {
+      console.error('Erro ao finalizar a corrida:', error);
+      alert('Não foi possível finalizar a corrida.');
     }
   }
 
   function formatStatus(status) {
     return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
-
 </script>
 
 <style>
@@ -131,6 +130,26 @@
   }
 </style>
 
+{#if showCancelModal}
+  <Modal 
+    title="Cancelar Corrida"
+    message="Esta ação não pode ser desfeita. Você tem certeza que deseja cancelar sua corrida?"
+    confirmLabel="Confirmar Cancelamento"
+    on:confirm={executeCancel}
+    on:close={() => showCancelModal = false}
+  />
+{/if}
+
+{#if showFinishModal}
+  <Modal 
+    title="Finalizar Corrida"
+    message="Você confirma que chegou ao seu destino e deseja finalizar a corrida?"
+    confirmLabel="Confirmar Finalização"
+    on:confirm={executeFinishRide}
+    on:close={() => showFinishModal = false}
+  />
+{/if}
+
 <div class="container">
   <h1>Sua Corrida (ID: {id})</h1>
 
@@ -139,7 +158,7 @@
   <div class="status">Status: {rideStatus}</div>
 
   <div class="actions">
-    <button class="cancel-btn" on:click={cancelRide}>Cancelar Corrida</button>
-    <button class="finish-btn" on:click={finishRide}>Finalizar Corrida</button>
+    <button class="cancel-btn" on:click={() => showCancelModal = true}>Cancelar Corrida</button>
+    <button class="finish-btn" on:click={() => showFinishModal = true}>Finalizar Corrida</button>
   </div>
 </div>

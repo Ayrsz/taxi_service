@@ -16,14 +16,13 @@ func SetupCorridaRoutes(api fiber.Router, corridaService *services.CorridaServic
 	corridaGroup.Post("/monitorar", corridaController.MonitorarCorrida)
 	corridaGroup.Put("/:id/aceitar", corridaController.AceitarCorrida)
 	corridaGroup.Put("/:id/posicao", corridaController.AtualizarPosicao)
-	corridaGroup.Post("/:id/cancelar", corridaController.CancelarCorrida) // Nova rota
 	corridaGroup.Post("/:id/finalizar", corridaController.FinalizarCorrida) // Nova rota
     corridaGroup.Post("/:id/cancelar/motorista", corridaController.CancelarCorridaPeloMotorista) 
 
 	api.Post("/corridas/:id/avaliar", corridaController.AvaliarCorrida)
 	api.Post("/corridas", corridaController.CriarCorrida)
 	api.Get("/corridas", corridaController.ListarCorridas)
-
+	api.Post("/corrida/:id/iniciar", corridaController.IniciarCorrida)
 	// Manter a rota OPTIONS para o CORS
 	corridaGroup.Options("/monitorar", func(c *fiber.Ctx) error {
 		return c.SendStatus(200)

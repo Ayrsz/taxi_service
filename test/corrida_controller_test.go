@@ -7,14 +7,15 @@ import (
 	"taxi-service/controllers"
 	"taxi-service/models"
 	"testing"
-
+	"taxi-service/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMonitorarCorridaHandler(t *testing.T) {
 	app := fiber.New()
-	controller := controllers.NewCorridaController()
+	corridaService := services.NewCorridaService()
+	controller := controllers.NewCorridaController(corridaService)
 	app.Post("/corrida/monitorar", controller.MonitorarCorrida)
 
 	body := `{"MotoristaID":1,"PassageiroID":2,"TempoEstimado":20,"TempoDecorrido":25,"Preco":100.0,"Status":"em_andamento"}`
@@ -31,7 +32,8 @@ func TestMonitorarCorridaHandler(t *testing.T) {
 
 func TestFinalizarCorridaHandler_Antecedencia(t *testing.T) {
 	app := fiber.New()
-	controller := controllers.NewCorridaController()
+	corridaService := services.NewCorridaService()
+	controller := controllers.NewCorridaController(corridaService)
 	app.Post("/corrida/finalizar", controller.FinalizarCorrida)
 
 	body := `{"MotoristaID":1,"PassageiroID":2,"TempoEstimado":20,"TempoDecorrido":15,"Preco":100.0,"Status":"em_andamento"}`
@@ -48,7 +50,8 @@ func TestFinalizarCorridaHandler_Antecedencia(t *testing.T) {
 
 func TestFinalizarCorridaHandler_NoTempo(t *testing.T) {
 	app := fiber.New()
-	controller := controllers.NewCorridaController()
+	corridaService := services.NewCorridaService()
+	controller := controllers.NewCorridaController(corridaService)
 	app.Post("/corrida/finalizar", controller.FinalizarCorrida)
 
 	body := `{"MotoristaID":1,"PassageiroID":2,"TempoEstimado":20,"TempoDecorrido":20,"Preco":100.0,"Status":"em_andamento"}`
@@ -67,7 +70,8 @@ func TestFinalizarCorridaHandler_NoTempo(t *testing.T) {
 
 func TestAvaliarCorridaHandler(t *testing.T) {
 	app := fiber.New()
-	controller := controllers.NewCorridaController()
+	corridaService := services.NewCorridaService()
+	controller := controllers.NewCorridaController(corridaService)
 	app.Post("/corridas/:id/avaliar", controller.AvaliarCorrida)
 
 	// Primeiro: adicionar uma corrida à slice global

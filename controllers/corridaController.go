@@ -8,6 +8,21 @@ import (
 	"strconv"
 )
 
+
+const (
+	// Status originais (mantidos para compatibilidade)
+	NoBodyRequestError  = "Não foi possível decodificar o corpo da requisição"
+	NoIDRequestedError  = "PassageiroID é obrigatório"
+	InvalidIDError = "ID da corrida inválido"
+	InvalidRiderIDError = "ID do motorista inválido"
+
+	FinishedRide = "Corrida finalizada"
+	StartedRide = "Corrida iniciada"
+	CancelRide = "Corrida cancelada"
+
+)
+
+
 // CorridaController gerencia as requisições HTTP para corridas.
 type CorridaController struct {
 	service *services.CorridaService
@@ -22,11 +37,11 @@ func NewCorridaController(service *services.CorridaService) *CorridaController {
 func (cc *CorridaController) CriarCorrida(c *fiber.Ctx) error {
 	var corridaInput models.Corrida
 	if err := c.BodyParser(&corridaInput); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Não foi possível decodificar o corpo da requisição"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": NoBodyRequestError})
 	}
 
 	if corridaInput.PassageiroID == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "PassageiroID é obrigatório"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": NoIDRequestedError})
 	}
 
 	corrida, err := cc.service.CriarNovaCorrida(corridaInput)
@@ -43,7 +58,7 @@ func (cc *CorridaController) CriarCorrida(c *fiber.Ctx) error {
 func (cc *CorridaController) GetCorrida(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID da corrida inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": InvalidIDError})
 	}
 
 	corrida, err := cc.service.GetCorridaPorID(id)
@@ -65,7 +80,7 @@ func (cc *CorridaController) MonitorarCorrida(c *fiber.Ctx) error {
 func (cc *CorridaController) AceitarCorrida(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID da corrida inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": InvalidIDError})
 	}
 
 	var body struct {
@@ -73,7 +88,7 @@ func (cc *CorridaController) AceitarCorrida(c *fiber.Ctx) error {
 	}
 
 	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Corpo da requisição inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": NoBodyRequestError})
 	}
 
 	if err := cc.service.AceitarCorrida(id, body.MotoristaID); err != nil {
@@ -87,7 +102,7 @@ func (cc *CorridaController) AceitarCorrida(c *fiber.Ctx) error {
 func (cc *CorridaController) AtualizarPosicao(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID da corrida inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": InvalidIDError})
 	}
 
 	var body struct {
@@ -96,7 +111,7 @@ func (cc *CorridaController) AtualizarPosicao(c *fiber.Ctx) error {
 	}
 
 	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Corpo da requisição inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": NoBodyRequestError})
 	}
 
 	if err := cc.service.AtualizarPosicao(id, body.Lat, body.Lng); err != nil {
@@ -106,25 +121,12 @@ func (cc *CorridaController) AtualizarPosicao(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-// CancelarCorrida (POST /corrida/:id/cancelar) cancela uma corrida.
-func (cc *CorridaController) CancelarCorrida(c *fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID da corrida inválido"})
-	}
-
-	if err := cc.service.CancelarCorrida(id); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	return c.SendStatus(fiber.StatusOK)
-}
 
 // FinalizarCorrida (POST /corrida/:id/finalizar) finaliza uma corrida.
 func (cc *CorridaController) FinalizarCorrida(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID da corrida inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": InvalidIDError})
 	}
 
 	if err := cc.service.FinalizarCorrida(id); err != nil {
@@ -138,14 +140,14 @@ func (cc *CorridaController) AvaliarCorrida(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": InvalidIDError})
 	}
 
 	var input struct {
 		Nota int `json:"nota"`
 	}
 	if err := c.BodyParser(&input); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "JSON inválido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": NoBodyRequestError})
 	}
 
 	if err := services.AvaliarCorrida(id, input.Nota); err != nil {
@@ -169,35 +171,57 @@ type cancelamentoMotoristaRequest struct {
 
 // CancelarCorridaPeloMotorista lida com a requisição de cancelamento de uma corrida por um motorista.
 func (cc *CorridaController) CancelarCorridaPeloMotorista(c *fiber.Ctx) error {
-	corridaID, err := c.ParamsInt("id")
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "ID da corrida inválido",
-		})
-	}
+    corridaID, err := c.ParamsInt("id")
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": InvalidIDError,
+        })
+    }
 
-	var req cancelamentoMotoristaRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Corpo da requisição inválido",
-		})
-	}
+    var req cancelamentoMotoristaRequest
+    if err := c.BodyParser(&req); err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": NoBodyRequestError,
+        })
+    }
 
-	if req.MotoristaID == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "O campo 'motorista_id' é obrigatório",
-		})
-	}
+    if req.MotoristaID == "" {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": InvalidRiderIDError,
+        })
+    }
 
-	// REATIVADO: A chamada ao serviço agora funcionará corretamente.
-	err = cc.service.CancelarCorridaPeloMotorista(corridaID, req.MotoristaID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+    err = cc.service.CancelarCorridaPeloMotorista(corridaID, req.MotoristaID)
+    if err != nil {
+        // --- MUDANÇA PRINCIPAL AQUI ---
+        // Erros de regra de negócio (como "não pode cancelar corrida finalizada")
+        // devem retornar um status 400, não 500.
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": err.Error(),
+        })
+    }
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Corrida cancelada pelo motorista com sucesso",
-	})
+    return c.Status(fiber.StatusOK).JSON(fiber.Map{
+        "message": CancelRIde,
+    })
+}
+
+func (cc *CorridaController) IniciarCorrida(c *fiber.Ctx) error {
+    corridaID, err := c.ParamsInt("id")
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": InvalidIDError,
+        })
+    }
+
+    err = cc.service.IniciarCorrida(corridaID)
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": err.Error(),
+        })
+    }
+
+    return c.Status(fiber.StatusOK).JSON(fiber.Map{
+        "message": StartedRide,
+    })
 }
